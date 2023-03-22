@@ -8,10 +8,11 @@ const cheerio = require('cheerio')
 const axios = require('axios')
 const stealth = require('puppeteer-extra-plugin-stealth')
 const { getData, setData, findData } = require('./DatabaseController')
-const { has, isEmpty, isObject } = require('lodash')
+const { has, isEmpty, isObject, replace } = require('lodash')
 const fs = require('fs')
 const slug = require('slug')
 const https = require('https')
+const path = require('path')
 
 puppeteer.use(stealth())
 
@@ -98,7 +99,7 @@ exports.getManga = async (url) => {
 
 exports.getChapter = async (url, manga = '', chapter = {}) => {
     console.log('Comprobando URL'.cyan)
-    url = url.replace('paginated', 'cascade')
+    url = replace(url, 'paginated', 'cascade')
     let pathToSaveMangas = './Mangas'
 
     // Preparar el guardado de imágenes
@@ -107,27 +108,48 @@ exports.getChapter = async (url, manga = '', chapter = {}) => {
     }
     pathToSaveMangas += has(chapter, 'chapter') ? `/${chapter.chapter}` : '/new'
     fs.mkdirSync(pathToSaveMangas, { recursive: true })
+
+    // Crear archivo de prueba
     fs.writeFileSync(`${pathToSaveMangas}/test.txt`, '', { encoding: 'utf8' })
 
     const listImages = []
 
     const browser = await puppeteer.launch({
         headless: false,
-        args: [`--no-sandbox`, `--disable-setuid-sandbox`],
+        args: [
+            `--no-sandbox`,
+            `--disable-setuid-sandbox`,
+        ],
     })
     const page = await browser.newPage()
 
     page.setDefaultNavigationTimeout(1000 * 60 * 20)
     const client = await page.target().createCDPSession();
+    const pathResolve = path.resolve(pathToSaveMangas)
+
     await client.send('Page.setDownloadBehavior', {
         behavior: 'allow',
-        downloadPath: pathToSaveMangas,
+        downloadPath: pathResolve,
     });
+
+    // await page.setRequestInterception(true)
+    // page.on('request', (request) => {
+    //     const headers = request.headers();
+    //     headers['Access-Control-Allow-Origin'] = '*';
+    //     request.continue({ headers });
+    // })
 
     console.log(`Buscando el episodio con la URL: ${url}`.bgBlue.white)
 
     // Navegar a la URL
-    await page.goto(url)
+    do {
+        await page.goto(url)
+
+        // Comprobar si la URL de la pagina cargada esta paginada o completa
+        if (page.url().includes('paginated')) {
+            url = url.replace('paginated', 'cascade')
+        }
+    } while (page.url().includes('paginated'))
 
     const html = await page.content()
     const $ = cheerio.load(html)
@@ -135,35 +157,19 @@ exports.getChapter = async (url, manga = '', chapter = {}) => {
     console.log('Obteniendo imágenes'.cyan)
 
     $('#main-container img').each((index, el) => {
-        const img = $(el)
-
-        listImages.push(img.attr('data-src'))
+        listImages.push($(el).attr('data-src'))
     })
 
     for (let i = 0; i < listImages.length; i++) {
         const img = `img-${i + 1}.jpg`
         const url = listImages[i]
+        const saveIn = pathToSaveMangas + '/' + img
 
         console.log(`Obteniendo la imagen ${url}`)
-        const data = await page.evaluate(
-            async ({ url, img }) => {
-                // const link = document.createElement('a')
-                // link.href = url
-                // link.download = img
-                // // link.target = '_blank'
-                // document.body.appendChild(link)
-                // console.log('link', link)
-                // link.click()
-                // link.remove()
-
-                const response = await fetch(url);
-                return await response.blob();
-            },
-            { url, img }
-        )
-
-        fs.writeFileSync(`${pathToSaveMangas}/${img}`, Buffer.from(data));
-        console.log(`Descargando en ${(pathToSaveMangas + '/' + img).cyan}\n`)
+        const data = await page.evaluate(saveMethods, { url, img, method: 'link' })
+        
+        console.log(`Descargando en ${(saveIn).cyan}\n`)
+        fs.writeFileSync(saveIn, data, 'base64')
 
         await new Promise((resolve) => setTimeout(resolve, 5000))
     }
@@ -171,5 +177,42 @@ exports.getChapter = async (url, manga = '', chapter = {}) => {
     // Cerrar el navegador
     await browser.close()
 
+    // Eliminar archivo de prueba
+    fs.rmSync(`${pathToSaveMangas}/test.txt`)
+
     console.log('Imágenes guardadas')
+}
+
+/**
+ * Métodos de guardado para la imagen
+ * 
+ * @param {*} url 
+ * @param {*} img 
+ * @param {*} method link - screenshot - fetch
+ */
+const saveMethods = async ({ url, img, method = 'link' }) => {
+    // Método de link
+    if (method === 'fetch') {
+        try {
+            const response = await fetch(url)
+            const buffer = await response.arrayBuffer()
+            return Buffer.from(buffer).toString('base64')
+        } catch (error) {
+            console.log('Un error al obtener la imagen', error)
+            await new Promise((resolve) => setTimeout(resolve, 5000))
+            return ''
+        }
+    }
+
+    // Descarga por link
+    if (method === 'link') {
+        const link = document.createElement('a')
+        link.href = url
+        link.download = url
+        // link.target = '_blank'
+        document.body.appendChild(link)
+        console.log('link', link)
+        link.click()
+        return link.remove()
+    }
 }
