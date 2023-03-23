@@ -52,3 +52,39 @@ exports.menu = async () => {
 
     return answer
 }
+
+exports.pause = async (message = 'Presione enter para continuar.') => {
+    const prompt = inquirer.createPromptModule()
+
+    await prompt([
+        {
+            type: 'input',
+            message,
+            name: 'enter',
+        },
+    ]);
+}
+
+exports.question = async (message) => {
+    const prompt = inquirer.createPromptModule()
+
+    const { answer } = await prompt([
+        {
+            type: 'list',
+            name: 'answer',
+            message,
+            choices: [
+                {
+                    value: 'yes',
+                    name: 'Si, estoy seguro/a'
+                },
+                {
+                    value: 'no',
+                    name: 'No, cancelar'
+                },
+            ]
+        },
+    ]);
+
+    return answer
+}

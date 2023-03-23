@@ -8,6 +8,9 @@ const { map } = require('lodash')
 const directory = `./db`
 const file = `${directory}/database.json`
 
+exports.databasePath = file
+exports.mangasFolder = './Mangas'
+
 /**
  * Obtiene la data de la base de datos
  * 

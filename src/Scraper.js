@@ -7,7 +7,7 @@ const puppeteer = require('puppeteer-extra')
 const cheerio = require('cheerio')
 const axios = require('axios')
 const stealth = require('puppeteer-extra-plugin-stealth')
-const { getData, setData, findData, updateChapter } = require('./DatabaseController')
+const { getData, setData, findData, updateChapter, mangasFolder } = require('./DatabaseController')
 const { has, isEmpty, isObject, replace } = require('lodash')
 const fs = require('fs')
 const slug = require('slug')
@@ -100,7 +100,7 @@ exports.getManga = async (url) => {
 exports.getChapter = async (url, manga = '', chapter = {}) => {
     console.log('Comprobando URL'.cyan)
     url = replace(url, 'paginated', 'cascade')
-    let pathToSaveMangas = './Mangas'
+    let pathToSaveMangas = mangasFolder
     const method = 'screenshot'
     const testFile = [
         'test.txt',
@@ -185,7 +185,7 @@ exports.getChapter = async (url, manga = '', chapter = {}) => {
 
         console.log(`Descargando en ${(saveIn).cyan}\n`)
 
-        await new Promise((resolve) => setTimeout(resolve, 2000))
+        await new Promise((resolve) => setTimeout(resolve, 1000))
     }
 
     // Cerrar el navegador
@@ -194,7 +194,7 @@ exports.getChapter = async (url, manga = '', chapter = {}) => {
     // Eliminar archivo de prueba
     fs.rmSync(`${pathToSaveMangas}/${testFile[0]}`)
 
-    console.log('Imágenes guardadas')
+    console.log('Capítulo descargado!'.cyan)
 }
 
 /**
