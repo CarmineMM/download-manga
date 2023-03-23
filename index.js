@@ -1,11 +1,11 @@
 require('colors')
 const { getManga, getChapter } = require('./src/Scraper')
-const { menu, pause, question } = require('./src/inquirer')
+const { menu, pause, getAllChapters } = require('./src/inquirer')
 const { inputUrlToManga, listMangas, showManga, inputUrlToChapter } = require('./src/Manga')
 const inquirer = require('inquirer')
-const { getData, databasePath, mangasFolder } = require('./src/DatabaseController')
 const { map } = require('lodash')
 const fs = require('fs')
+const { removeDatabase, removeMangaFolder } = require('./src/FilesController')
 
 const main = async () => {
     let answer = '0'
@@ -23,7 +23,6 @@ const main = async () => {
 
             if (manga !== '0') {
                 let { reOpt, chapterUrl: getUrl, chapter } = await showManga(manga)
-
                 chapterUrl = getUrl
                 answer = reOpt
                 chapterInfo = chapter
@@ -33,15 +32,16 @@ const main = async () => {
         // Obtener un manga de una URL
         if (answer === '2') {
             const url = await inputUrlToManga()
-            const mangaInfo = await getManga(url)
+            manga = await getManga(url)
 
-            const { reOpt, chapterUrl: getUrl, chapter } = await showManga(mangaInfo)
+            const { reOpt, chapterUrl: getUrl, chapter } = await showManga(manga)
             chapterUrl = getUrl
             answer = reOpt
+            chapterInfo = chapter
         }
 
         // Obtener un capitulo
-        if (answer === '3') {
+        if (answer === '3' && chapterInfo !== 'all') {
             if (chapterUrl === '') {
                 const url = await inputUrlToChapter()
                 chapterUrl = url
@@ -58,32 +58,17 @@ const main = async () => {
 
         // Eliminar base de datos
         if (answer === '5') {
-            const response = await question('¿Seguro desea eliminar los datos almacenados?'.bgRed.white)
-
-            if (response === 'yes') {
-                try {
-                    fs.rmSync(databasePath)
-                    await pause('Base de datos eliminada.\nPresione Enter para continuar.'.yellow)
-                } catch (error) {
-                    console.log('No hay datos que eliminar.'.cyan)
-                    await pause()
-                }
-            }
+            await removeDatabase()
         }
 
         // Eliminar Mangas descargados
         if (answer === '6') {
-            const response = await question('¿Seguro desea eliminar la carpeta de Mangas descargados?'.bgRed.white)
+            await removeMangaFolder()
+        }
 
-            if (response === 'yes') {
-                try {
-                    fs.rmSync(mangasFolder, { recursive: true })
-                    await pause('Archivos eliminados.\nPresione Enter para continuar.'.yellow)
-                } catch (error) {
-                    console.log('No hay datos que eliminar.'.cyan)
-                    await pause()
-                }
-            }
+        // Obtener todos los capítulos de un manga
+        if (chapterInfo === 'all') {
+            await getAllChapters(manga)
         }
 
     } while (answer !== '0')

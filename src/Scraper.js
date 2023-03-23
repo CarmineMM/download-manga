@@ -98,6 +98,7 @@ exports.getManga = async (url) => {
 }
 
 exports.getChapter = async (url, manga = '', chapter = {}) => {
+    console.clear()
     console.log('Comprobando URL'.cyan)
     url = replace(url, 'paginated', 'cascade')
     let pathToSaveMangas = mangasFolder
@@ -165,7 +166,7 @@ exports.getChapter = async (url, manga = '', chapter = {}) => {
     })
 
     for (let i = 0; i < listImages.length; i++) {
-        const img = `img-${i + 1}.jpg`
+        const img = `img-${formatNumber(i + 1)}.jpg`
         const saveIn = pathToSaveMangas + '/' + img
         const url = listImages[i]
 
@@ -247,3 +248,5 @@ const saveMethods = async ({ url, img, method = 'link', saveIn }) => {
         return link.remove()
     }
 }
+
+const formatNumber = (number) => number < 10 ? `0${number}` : number

@@ -88,3 +88,14 @@ exports.question = async (message) => {
 
     return answer
 }
+
+exports.getAllChapters = async (manga) => {
+    const prompt = inquirer.createPromptModule()
+    console.log('Obteniendo la lista de scan'.cyan)
+
+    const { scan } = await prompt([
+        {
+
+        }
+    ])
+}
