@@ -7,7 +7,7 @@ const puppeteer = require('puppeteer-extra')
 const cheerio = require('cheerio')
 const axios = require('axios')
 const stealth = require('puppeteer-extra-plugin-stealth')
-const { getData, setData, findData } = require('./DatabaseController')
+const { getData, setData, findData, updateChapter } = require('./DatabaseController')
 const { has, isEmpty, isObject, replace } = require('lodash')
 const fs = require('fs')
 const slug = require('slug')
@@ -101,16 +101,22 @@ exports.getChapter = async (url, manga = '', chapter = {}) => {
     console.log('Comprobando URL'.cyan)
     url = replace(url, 'paginated', 'cascade')
     let pathToSaveMangas = './Mangas'
+    const method = 'screenshot'
+    const testFile = [
+        'test.txt',
+        `DESCARGANDO DE URL: ${url}`
+    ]
 
     // Preparar el guardado de imágenes
     if (isObject(manga)) {
         pathToSaveMangas += `/${slug(manga.title)}`
     }
     pathToSaveMangas += has(chapter, 'chapter') ? `/${chapter.chapter}` : '/new'
+
     fs.mkdirSync(pathToSaveMangas, { recursive: true })
 
     // Crear archivo de prueba
-    fs.writeFileSync(`${pathToSaveMangas}/test.txt`, '', { encoding: 'utf8' })
+    fs.writeFileSync(`${pathToSaveMangas}/${testFile[0]}`, testFile[1], { encoding: 'utf8' })
 
     const listImages = []
 
@@ -132,22 +138,20 @@ exports.getChapter = async (url, manga = '', chapter = {}) => {
         downloadPath: pathResolve,
     });
 
-    // await page.setRequestInterception(true)
-    // page.on('request', (request) => {
-    //     const headers = request.headers();
-    //     headers['Access-Control-Allow-Origin'] = '*';
-    //     request.continue({ headers });
-    // })
-
-    console.log(`Buscando el episodio con la URL: ${url}`.bgBlue.white)
-
     // Navegar a la URL
     do {
+        console.log(`Buscando el episodio con la URL: ${url}`.bgBlue.white)
         await page.goto(url)
+
+        // Actualizar la URL en caso de ser de re-direcciones
+        if (!isEmpty(chapter) && !isEmpty(manga) && !url.includes('cascade')) {
+            updateChapter(manga.id, chapter.chapter, url, page.url())
+        }
 
         // Comprobar si la URL de la pagina cargada esta paginada o completa
         if (page.url().includes('paginated')) {
-            url = url.replace('paginated', 'cascade')
+            console.log('\nCambiando a modo Cascada'.yellow)
+            url = replace(page.url(), 'paginated', 'cascade')
         }
     } while (page.url().includes('paginated'))
 
@@ -156,29 +160,39 @@ exports.getChapter = async (url, manga = '', chapter = {}) => {
 
     console.log('Obteniendo imágenes'.cyan)
 
-    $('#main-container img').each((index, el) => {
+    $('#main-container img').each(async (i, el) => {
         listImages.push($(el).attr('data-src'))
     })
 
     for (let i = 0; i < listImages.length; i++) {
         const img = `img-${i + 1}.jpg`
-        const url = listImages[i]
         const saveIn = pathToSaveMangas + '/' + img
+        const url = listImages[i]
 
         console.log(`Obteniendo la imagen ${url}`)
-        const data = await page.evaluate(saveMethods, { url, img, method: 'link' })
-        
-        console.log(`Descargando en ${(saveIn).cyan}\n`)
-        fs.writeFileSync(saveIn, data, 'base64')
+        if (method === 'screenshot') {
+            const element = await page.$(`img[data-src="${url}"]`)
+            await element.screenshot({ path: saveIn })
+        }
+        else {
+            const data = await page.evaluate(saveMethods, { url, img, method, saveIn })
+            if (method === 'fetch') {
+                data
+                    ? fs.writeFileSync(saveIn, data, 'base64')
+                    : console.log('No se pudo cargar la imagen'.bgRed.cyan)
+            }
+        }
 
-        await new Promise((resolve) => setTimeout(resolve, 5000))
+        console.log(`Descargando en ${(saveIn).cyan}\n`)
+
+        await new Promise((resolve) => setTimeout(resolve, 2000))
     }
 
     // Cerrar el navegador
     await browser.close()
 
     // Eliminar archivo de prueba
-    fs.rmSync(`${pathToSaveMangas}/test.txt`)
+    fs.rmSync(`${pathToSaveMangas}/${testFile[0]}`)
 
     console.log('Imágenes guardadas')
 }
@@ -188,9 +202,9 @@ exports.getChapter = async (url, manga = '', chapter = {}) => {
  * 
  * @param {*} url 
  * @param {*} img 
- * @param {*} method link - screenshot - fetch
+ * @param {*} method link - screenshot - fetch - link-2
  */
-const saveMethods = async ({ url, img, method = 'link' }) => {
+const saveMethods = async ({ url, img, method = 'link', saveIn }) => {
     // Método de link
     if (method === 'fetch') {
         try {
@@ -212,6 +226,23 @@ const saveMethods = async ({ url, img, method = 'link' }) => {
         // link.target = '_blank'
         document.body.appendChild(link)
         console.log('link', link)
+        link.click()
+        return link.remove()
+    }
+
+    // Descarga por link version 2
+    if (method === 'link-v2') {
+        const canvas = document.createElement('canvas')
+        const image = document.querySelector(`[data-src="${url}"]`)
+        canvas.width = image.width
+        canvas.height = image.height
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(image, 0, 0)
+        const dataURL = canvas.toDataURL('image/png')
+        const link = document.createElement('a')
+        link.download = url
+        link.href = dataURL
+        document.body.appendChild(link)
         link.click()
         return link.remove()
     }

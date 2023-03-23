@@ -3,6 +3,8 @@ const { getManga, getChapter } = require('./src/Scraper')
 const { menu } = require('./src/inquirer')
 const { inputUrlToManga, listMangas, showManga, inputUrlToChapter } = require('./src/Manga')
 const inquirer = require('inquirer')
+const { getData } = require('./src/DatabaseController')
+const { map } = require('lodash')
 
 const main = async () => {
     let answer = '0'
