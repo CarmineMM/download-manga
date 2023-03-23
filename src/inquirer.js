@@ -25,6 +25,14 @@ const questions = [
                 name: `${'4.'.green} Sincronizar manga`,
             },
             {
+                value: '5',
+                name: `${'5.'.green} Eliminar datos`,
+            },
+            {
+                value: '6',
+                name: `${'6.'.green} Vaciar la carpeta de Mangas descargados`,
+            },
+            {
                 value: '0',
                 name: `${'0.'.green} Salir\n`,
             },
