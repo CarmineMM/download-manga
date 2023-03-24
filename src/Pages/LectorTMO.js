@@ -2,10 +2,12 @@ const puppeteer = require('puppeteer-extra')
 const cheerio = require('cheerio')
 const stealth = require('puppeteer-extra-plugin-stealth')
 const slug = require('slug')
+const { findData, setData } = require('../DatabaseController')
+const { isEmpty } = require('lodash')
 
 puppeteer.use(stealth())
 
-exports.getMangaFromTMO = async (url) => {
+exports.getManga = async (url) => {
     console.clear()
     url = url.trim().replace(/\/$/, '')
 
@@ -17,6 +19,7 @@ exports.getMangaFromTMO = async (url) => {
         return findManga
     }
 
+    console.clear()
     console.log('No se encontró el manga en la base de datos'.cyan)
     // Objeto con el capitulo 
     const manga = {}
@@ -43,7 +46,7 @@ exports.getMangaFromTMO = async (url) => {
     manga.genders = []
     manga.chapters = []
 
-    console.log(`\nManga encontrado:`.green, manga.title.bgMagenta.black, '\n')
+    console.log(`\nManga encontrado:`.green, manga.title.cyan, '\n')
     console.log('Extrayendo información...'.cyan)
 
     // Obtener los géneros
@@ -72,11 +75,25 @@ exports.getMangaFromTMO = async (url) => {
         })
     })
 
+    // SI los capítulos están vacíos buscar por otro lado
+    if (isEmpty(manga.chapters)) {
+        $('.upload-link').each((index, el) => {
+            const option = $(el)
+            manga.chapters.push({
+                chapter: option.find('.col-4.col-md-6.text-truncate span').text(),
+                option: option.find('.btn.btn-default.btn-sm').attr('href')
+            })
+        })
+    }
+
     // Cerrar el navegador
     await browser.close()
 
     // Guardar en la base de datos la información recolectada
-    setData(url, manga)
+    setData(url, {
+        ...manga,
+        from: 'tuMangaOnline'
+    })
 
     console.log('Fin de la ejecución'.bgGreen.black)
     // Retornar el arreglo de capítulos como resultado de la función

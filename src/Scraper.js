@@ -9,7 +9,6 @@ const fs = require('fs')
 const slug = require('slug')
 const path = require('path')
 const { saveMethods } = require('./Store')
-const LectorTMO = require('./Pages/LectorTMO')
 const config = require('./DefaultConfig')
 const { pause } = require('./inquirer')
 
@@ -24,8 +23,15 @@ exports.getManga = async (url) => {
         (page) => find(page.linksKnown, (link) => url.includes(link.toLowerCase()))
     )
 
-    console.log(page)
-    await pause()
+    // Comprobar existencia y disponibilidad del controlador
+    if (isEmpty(page) && !has(page.controller)) {
+        console.log('No se encontró un controlador para este sitio web'.bgRed.white)
+        await pause()
+    }
+
+    const mangaController = require(`./Pages/${page.controller}`)
+
+    await mangaController.getManga(url)
 }
 
 /**

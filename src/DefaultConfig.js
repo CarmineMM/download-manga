@@ -7,6 +7,7 @@ const config = defaults(userConfig, {
     databaseDirectory: 'db',
     databaseFile: 'database.json',
     folderSaved: 'Mangas',
+    navigationTimeout: 1000 * 60 * 5, // Min
     pages: {
         tuMangaOnline: {
             title: 'TU MANGA ONLINE',
