@@ -36,12 +36,12 @@ const main = async () => {
             const url = await inputUrlToManga()
             manga = await getManga(url)
 
-            // if (manga) {
-            //     const { reOpt, chapterUrl: getUrl, chapter } = await showManga(manga)
-            //     chapterUrl = getUrl
-            //     answer = reOpt
-            //     chapterInfo = chapter
-            // }
+            if (manga) {
+                const { reOpt, chapterUrl: getUrl, chapter } = await showManga(manga)
+                chapterUrl = getUrl
+                answer = reOpt
+                chapterInfo = chapter
+            }
         }
 
         // Obtener un capitulo

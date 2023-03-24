@@ -80,8 +80,8 @@ exports.getManga = async (url) => {
         $('.upload-link').each((index, el) => {
             const option = $(el)
             manga.chapters.push({
-                chapter: option.find('.col-4.col-md-6.text-truncate span').text(),
-                option: option.find('.btn.btn-default.btn-sm').attr('href')
+                chapter: option.find('.col-4.col-md-6.text-truncate span').text().replace('\n', '').trim(),
+                options: option.find('.btn.btn-default.btn-sm').attr('href')
             })
         })
     }

@@ -1,9 +1,10 @@
 const inquirer = require('inquirer')
 const { getData } = require('./DatabaseController')
-const { map, find } = require('lodash')
+const { map, find, size, isArray, isString } = require('lodash')
 require('colors')
 const config = require('./DefaultConfig')
 const { checkUrl } = require('./Helpers')
+const { pause } = require('./inquirer')
 
 exports.listMangas = async () => {
     const prompt = inquirer.createPromptModule()
@@ -43,9 +44,9 @@ exports.showManga = async (manga) => {
     let reOpt = '---'
     let chapterUrl = ''
 
-    console.log(`\n${'Titulo:'.cyan}\n${manga.title}\n`)
+    console.log(`\n${'Titulo:'.cyan}\n${manga.title.yellow}\n`)
     // console.log(`${'También buscado como:'.cyan}\n${manga.subtitle}\n`)
-    // console.log(`${'Descripción:'.cyan}\n${manga.description}\n`)
+    console.log(`${'Descripción:'.cyan}\n${manga.description}\n`)
 
     const choices = [
         {
@@ -75,19 +76,25 @@ exports.showManga = async (manga) => {
     ])
 
     if (chapter !== '0' && chapter !== 'all') {
-        const { scan } = await prompt([
-            {
-                type: 'list',
-                message: `Seleccione uno de los scan para descargar el episodio: ${chapter.chapter.cyan}`,
-                name: 'scan',
-                choices: map(chapter.options, (opt) => ({
-                    value: opt.url,
-                    name: opt.scan
-                }))
-            }
-        ])
+        if (isArray(chapter.options) && size(chapter.options) > 1) {
+            const { scan } = await prompt([
+                {
+                    type: 'list',
+                    message: `Seleccione uno de los scan para descargar el episodio: ${chapter.chapter.cyan}`,
+                    name: 'chapterUrl',
+                    choices: map(chapter.options, (opt) => ({
+                        value: opt.url,
+                        name: opt.scan
+                    }))
+                }
+            ])
+            chapterUrl = scan
+        }
+        // Capitulo solo sin URL
+        else {
+            chapterUrl = isArray(chapter.options) ? chapter.options[0] : chapter.options
+        }
 
-        chapterUrl = scan
         reOpt = '3'
     }
 
