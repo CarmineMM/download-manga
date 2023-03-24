@@ -13,7 +13,7 @@ const config = require('./DefaultConfig')
 exports.getData = () => {
     console.log('\nDatabase Read\n'.yellow)
     if (!fs.existsSync(config.databasePath)) {
-        fs.mkdirSync(directory, { recursive: true })
+        fs.mkdirSync(config.databaseDirectory, { recursive: true })
         return {};
     }
     return JSON.parse(fs.readFileSync(config.databasePath, { encoding: 'utf-8' }))

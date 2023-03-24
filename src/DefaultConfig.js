@@ -6,6 +6,7 @@ const config = defaults(userConfig, {
     dirname: './',
     databaseDirectory: 'db',
     databaseFile: 'database.json',
+    folderSaved: 'Mangas',
     pages: {
         tuMangaOnline: {
             title: 'TU MANGA ONLINE',
@@ -34,6 +35,6 @@ config.databasePath = constructPath(
 )
 
 // Carpeta para guardar los mangas
-config.mangaFolder = constructPath(config.dirname, config.folderSaved)
+config.mangasFolder = constructPath(config.dirname, config.folderSaved)
 
 module.exports = config

@@ -1,6 +1,6 @@
 module.exports = {
     dirname: __dirname,
-    folderSaved: 'Manga',
+    folderSaved: 'Mangas',
     databaseDirectory: 'db',
     databaseFile: 'database.json',
     pages: {
