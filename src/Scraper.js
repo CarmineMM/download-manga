@@ -17,6 +17,18 @@ const { pause } = require('./inquirer')
  * Obtiene la información de un manga
  */
 exports.getManga = async (url) => {
+    console.clear()
+    url = url.trim().replace(/\/$/, '')
+
+    console.log('Buscando el manga en la base de datos'.cyan)
+    const findManga = findData(url)
+
+    // Comprobar primero que ya no exista información en la base de datos sobre esta url
+    if (findManga) {
+        return findManga
+    }
+
+    console.clear()
     // Explorar para saber que controlador usar
     const page = find(
         config.pages,
@@ -24,14 +36,17 @@ exports.getManga = async (url) => {
     )
 
     // Comprobar existencia y disponibilidad del controlador
-    if (isEmpty(page) && !has(page.controller)) {
+    if (isEmpty(page) || !has(page, 'controller')) {
         console.log('No se encontró un controlador para este sitio web'.bgRed.white)
         await pause()
+        return false
     }
 
     const mangaController = require(`./Pages/${page.controller}`)
 
-    await mangaController.getManga(url)
+    const manga = await mangaController.getManga(url)
+
+    return manga
 }
 
 /**

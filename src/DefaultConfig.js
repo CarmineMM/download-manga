@@ -43,5 +43,10 @@ if (!has(config, 'pages.tuMangaOnline.controller')) {
     config.pages.tuMangaOnline.controller = 'LectorTMO'
 }
 
+// Asociar controladores para Plot Twist no Fansub
+if (!has(config, 'pages.plotTwistNoFansub.controller')) {
+    config.pages.plotTwistNoFansub.controller = 'PlotTwistNoFansub'
+}
+
 
 module.exports = config

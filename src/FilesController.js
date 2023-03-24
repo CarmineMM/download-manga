@@ -12,7 +12,9 @@ exports.removeDatabase = async () => {
     if (response === 'yes') {
         try {
             fs.rmSync(config.databasePath)
-            await pause('Base de datos eliminada.\nPresione Enter para continuar.'.yellow)
+            console.clear()
+            console.log('\nBase de datos eliminada.\n'.yellow)
+            await pause('Presione Enter para continuar.')
         } catch (error) {
             console.log('No hay datos que eliminar.'.cyan)
             await pause()

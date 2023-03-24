@@ -4,30 +4,18 @@ const stealth = require('puppeteer-extra-plugin-stealth')
 const slug = require('slug')
 const { findData, setData } = require('../DatabaseController')
 const { isEmpty } = require('lodash')
+const config = require('../DefaultConfig')
 
 puppeteer.use(stealth())
 
 exports.getManga = async (url) => {
-    console.clear()
-    url = url.trim().replace(/\/$/, '')
-
-    console.log('Buscando el manga en la base de datos'.cyan)
-    const findManga = findData(url)
-
-    // Comprobar primero que ya no exista información en la base de datos sobre esta url
-    if (findManga) {
-        return findManga
-    }
-
-    console.clear()
-    console.log('No se encontró el manga en la base de datos'.cyan)
     // Objeto con el capitulo 
     const manga = {}
 
     // Abrir un navegador y una nueva pestaña
     const browser = await puppeteer.launch()
     const page = await browser.newPage()
-    page.setDefaultNavigationTimeout(1000 * 60 * 10)
+    page.setDefaultNavigationTimeout(config.navigationTimeout)
 
     console.log(`Buscando el manga con la URL: ${url}`.bgBlue.white)
     // Navegar a la URL
@@ -40,9 +28,9 @@ exports.getManga = async (url) => {
     const $ = cheerio.load(html)
 
     // Obtener el titulo, subtitulo y descripción del manga
-    manga.title = $('h1.element-title').text().trim().replace('\n', ' ')
-    manga.subtitle = $('h2.element-subtitle').text().trim().replace('\n', ' ')
-    manga.description = $('p.element-description').text().trim().replace('\n', ' ')
+    manga.title = $('h1.element-title').text().replace('\n', ' ').trim()
+    manga.subtitle = $('h2.element-subtitle').text().replace('\n', ' ').trim()
+    manga.description = $('p.element-description').text().replace('\n', ' ').trim()
     manga.genders = []
     manga.chapters = []
 
