@@ -1,0 +1,1 @@
+exports.getMangaFromTMO = (url) => { }

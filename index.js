@@ -7,6 +7,7 @@ const { map } = require('lodash')
 const fs = require('fs')
 const { removeDatabase, removeMangaFolder } = require('./src/FilesController')
 const config = require('./src/DefaultConfig')
+const helpers = require('./src/Helpers')
 
 const main = async () => {
     let answer = '0'
@@ -77,6 +78,4 @@ const main = async () => {
     console.log('\nAdios!!'.yellow)
 }
 
-// main()
-
-console.log(config)
+main()

@@ -97,6 +97,13 @@ exports.getManga = async (url) => {
     return manga
 }
 
+/**
+ * Obtener/Descargar un capitulo de manga
+ * 
+ * @param {string} url 
+ * @param {string} manga 
+ * @param {object} chapter 
+ */
 exports.getChapter = async (url, manga = '', chapter = {}) => {
     console.clear()
     console.log('Comprobando URL'.cyan)
