@@ -1,7 +1,7 @@
 const fs = require('fs')
 const { pause, question } = require('./inquirer')
 require('colors')
-const { databasePath, mangasFolder } = require('./DatabaseController')
+const { databaseFile } = require('./DatabaseController')
 
 /**
  * Elimina el archivo que se usa de base de datos
@@ -11,7 +11,7 @@ exports.removeDatabase = async () => {
 
     if (response === 'yes') {
         try {
-            fs.rmSync(databasePath)
+            fs.rmSync(databaseFile)
             await pause('Base de datos eliminada.\nPresione Enter para continuar.'.yellow)
         } catch (error) {
             console.log('No hay datos que eliminar.'.cyan)

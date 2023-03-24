@@ -6,6 +6,7 @@ const inquirer = require('inquirer')
 const { map } = require('lodash')
 const fs = require('fs')
 const { removeDatabase, removeMangaFolder } = require('./src/FilesController')
+const config = require('./src/DefaultConfig')
 
 const main = async () => {
     let answer = '0'
@@ -76,4 +77,6 @@ const main = async () => {
     console.log('\nAdios!!'.yellow)
 }
 
-main()
+// main()
+
+console.log(config)
