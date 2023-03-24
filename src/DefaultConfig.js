@@ -1,5 +1,5 @@
 const userConfig = require('../config')
-const { defaults } = require('lodash')
+const { defaults, has } = require('lodash')
 const { constructPath } = require('./Helpers')
 
 const config = defaults(userConfig, {
@@ -36,5 +36,11 @@ config.databasePath = constructPath(
 
 // Carpeta para guardar los mangas
 config.mangasFolder = constructPath(config.dirname, config.folderSaved)
+
+// Asociar controladores para LectorTMO
+if (!has(config, 'pages.tuMangaOnline.controller')) {
+    config.pages.tuMangaOnline.controller = 'LectorTMO'
+}
+
 
 module.exports = config

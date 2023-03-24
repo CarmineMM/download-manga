@@ -2,6 +2,8 @@ const inquirer = require('inquirer')
 const { getData } = require('./DatabaseController')
 const { map, find } = require('lodash')
 require('colors')
+const config = require('./DefaultConfig')
+const { checkUrl } = require('./Helpers')
 
 exports.listMangas = async () => {
     const prompt = inquirer.createPromptModule()
@@ -42,8 +44,8 @@ exports.showManga = async (manga) => {
     let chapterUrl = ''
 
     console.log(`\n${'Titulo:'.cyan}\n${manga.title}\n`)
-    console.log(`${'También buscado como:'.cyan}\n${manga.subtitle}\n`)
-    console.log(`${'Descripción:'.cyan}\n${manga.description}\n`)
+    // console.log(`${'También buscado como:'.cyan}\n${manga.subtitle}\n`)
+    // console.log(`${'Descripción:'.cyan}\n${manga.description}\n`)
 
     const choices = [
         {
@@ -107,8 +109,8 @@ exports.inputUrlToManga = async () => {
             validate(value) {
                 const done = this.async()
 
-                if (value.length < 1 || !value.includes('https://lectortmo.com') || !value.startsWith('https')) {
-                    return done('Por favor ingrese una URL valida hacia LectorTMO')
+                if (!checkUrl(value, config.pages)) {
+                    return done('Por favor ingrese una URL valida hacia un sitio valido')
                 }
 
                 return done(null, true)
