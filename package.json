@@ -18,6 +18,7 @@
     "puppeteer": "^19.7.5",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "request": "^2.88.2",
     "slug": "^8.2.2"
   }
 }

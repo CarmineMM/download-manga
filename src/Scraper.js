@@ -79,5 +79,6 @@ exports.getChapter = async (chapter = {}, manga = false) => {
 
     const gettingManga = await mangaController.getChapter(chapter, manga)
 
+    await pause()
 }
 

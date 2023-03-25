@@ -3,10 +3,13 @@ const cheerio = require('cheerio')
 const stealth = require('puppeteer-extra-plugin-stealth')
 const slug = require('slug')
 const { findData, setData } = require('../DatabaseController')
-const { isEmpty } = require('lodash')
+const { isEmpty, has, last, size } = require('lodash')
 const { pause } = require('../inquirer')
 const config = require('../DefaultConfig')
 const { constructPath } = require('../Helpers')
+const request = require('request')
+const fs = require('fs')
+const { formatNumber } = require('../Helpers')
 
 puppeteer.use(stealth())
 
@@ -92,5 +95,68 @@ const insertCodeInPlotTwistPage = async (page) => {
  * @returns void
  */
 exports.getChapter = async (chapter, manga = {}) => {
-    await pause('Dscargando capitulo')
+    const url = chapter.url.trim()
+    let pathToSaveMangas = constructPath(config.mangasFolder, config.pages.plotTwistNoFansub.folderSaved)
+
+    const testFile = [
+        'test.txt',
+        `DESCARGANDO DE URL: ${url}`
+    ]
+
+    // Preparar el guardado de imágenes
+    if (has(manga, 'title')) {
+        pathToSaveMangas += `/${slug(manga.title)}`
+    }
+    pathToSaveMangas += has(chapter, 'chapter') ? `/${chapter.chapter}` : '/new'
+
+    console.log(`Buscando el episodio con la URL: ${url}`.bgBlue.white)
+
+    fs.mkdirSync(pathToSaveMangas, { recursive: true })
+
+    // Crear archivo de prueba
+    fs.writeFileSync(`${pathToSaveMangas}/${testFile[0]}`, testFile[1], { encoding: 'utf8' })
+
+    if (!url.includes('chapter-')) {
+        await pause('No se puede descargar desde la url proporcionada'.bgRed.white)
+        return
+    }
+
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.goto(url)
+
+    console.log('Obteniendo el listado de imágenes del episodio')
+
+    let insertCode = {}
+
+    const obj = await page.evaluate(async (getObj) => {
+        document.addEventListener('DOMContentLoaded', () => getObj = window.obj)
+        await new Promise((resolve) => setTimeout(resolve, 5000))
+        return getObj
+    }, { insertCode })
+
+    let baseUrlToImages = `${obj.site_url}/${obj.all_manga_dir}/${obj.title}_:manga_id/ch_${obj.actual}/:img_name`
+
+    for (let i = 0; i < size(obj.images); i++) {
+        let { image_name, manga_id } = obj.images[i]
+
+        const getImageUrl = baseUrlToImages.replace(':manga_id', manga_id).replace(':img_name', image_name)
+        let format = last(image_name.split('.'))
+        let imgSaveTo = `${pathToSaveMangas}/img-${formatNumber(i + 1)}.${format}`
+
+
+        console.log(`Descargando imagen de: ${getImageUrl.cyan}`)
+        request(getImageUrl).pipe(
+            fs.createWriteStream(imgSaveTo)
+        )
+        console.log(`Imagen guardada en: ${imgSaveTo.yellow}\n`);
+    }
+
+    // Cerrar el navegador
+    await browser.close()
+
+    // Eliminar archivo de prueba
+    fs.rmSync(`${pathToSaveMangas}/${testFile[0]}`)
+
+    console.log('Capítulo descargado!'.cyan)
 }

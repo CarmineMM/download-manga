@@ -52,8 +52,6 @@ const main = async () => {
             }
 
             await getChapter(chapterUrl, manga, chapterInfo)
-
-            await pause()
         }
 
         if (answer === '4') {
