@@ -61,15 +61,21 @@ exports.getChapter = async (chapter = {}, manga = false) => {
     console.log('Comprobando URL'.cyan)
 
     chapter = isString(chapter) ? { url: chapter.toLocaleLowerCase() } : chapter
+    let page = {}
 
     // Explorar para saber que controlador usar
-    const page = find(
-        config.pages,
-        (page) => find(page.linksKnown, (link) => chapter.url.includes(link.toLowerCase()))
-    )
+    if (manga) {
+        page = config.pages[manga.from]
+    }
+    else {
+        page = find(
+            config.pages,
+            (page) => find(page.linksKnown, (link) => chapter.url.includes(link.toLowerCase()))
+        )
+    }
 
     // Comprobar existencia y disponibilidad del controlador
-    if (isEmpty(page) || !has(page, 'controller')) {
+    if (!has(page, 'controller')) {
         console.log('No se encontró un controlador para este sitio web'.bgRed.white)
         await pause()
         return false

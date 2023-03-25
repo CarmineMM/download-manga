@@ -68,7 +68,7 @@ exports.getManga = async (url) => {
 
         manga.chapters.push({
             chapter: item.find('h4 a').text().replace('Capítulo', '').trim(),
-            options
+            url: options
         })
     })
 
@@ -78,7 +78,7 @@ exports.getManga = async (url) => {
             const option = $(el)
             manga.chapters.push({
                 chapter: option.find('.col-4.col-md-6.text-truncate span').text().replace('\n', '').trim(),
-                options: option.find('.btn.btn-default.btn-sm').attr('href'),
+                url: option.find('.btn.btn-default.btn-sm').attr('href'),
                 downloadConfirm: false,
             })
         })

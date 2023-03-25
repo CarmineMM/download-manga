@@ -78,7 +78,7 @@ const insertCodeInPlotTwistPage = async (page) => {
         page.chapters = window.obj.chapters.map(chapter => ({
             downloadLink: chapter.chapter_downloadlink,
             chapter: `Capítulo ${chapter.chapter_number}: ${chapter.chapter_name}`.trim(),
-            options: `${window.obj.site_url}/${window.obj.read}/${window.obj.title}/chapter-${chapter.chapter_number}`,
+            url: `${window.obj.site_url}/${window.obj.read}/${window.obj.title}/chapter-${chapter.chapter_number}`,
             downloadConfirm: false,
         }))
     })

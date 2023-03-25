@@ -75,18 +75,23 @@ exports.showManga = async (manga) => {
     ])
 
     if (chapter !== '0' && chapter !== 'all') {
-        if (isArray(chapter.options) && size(chapter.options) > 1) {
+        // No es necesario seleccionar una opción de descarga si solo hay una
+        if (isArray(chapter.url) && size(chapter.url) === 1) {
+            chapter.url = chapter.url[0].url
+        }
+        else {
             const { scan } = await prompt([
                 {
                     type: 'list',
                     message: `Seleccione uno de los scan para descargar el episodio: ${chapter.chapter.cyan}`,
                     name: 'scan',
-                    choices: map(chapter.options, (opt) => ({
+                    choices: map(chapter.url, (opt) => ({
                         value: opt.url,
                         name: opt.scan
                     }))
                 }
             ])
+
             chapter = {
                 url: scan.value,
                 chapter: chapter.chapter
