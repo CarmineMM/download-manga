@@ -36,5 +36,18 @@ exports.checkUrl = (url, pages) => {
     )
 }
 
-
+/**
+ * Formatea números para agregarle un 0 al principio
+ * 
+ * @param {number} number 
+ * @returns {number}
+ */
 exports.formatNumber = (number) => number < 10 ? `0${number}` : number
+
+/**
+ * Limpia un string para no tener caracteres no permitidos
+ * 
+ * @param {string} str 
+ * @returns {string}
+ */
+exports.cleanString = (str) => str.replace(/[^a-zA-Z0-9ñÑáéíóúÁÉÍÓÚüÜ\s]/g, ' ').trim()

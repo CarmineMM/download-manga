@@ -6,7 +6,7 @@ const { findData, setData } = require('../DatabaseController')
 const { isEmpty, has, last, size } = require('lodash')
 const { pause } = require('../inquirer')
 const config = require('../DefaultConfig')
-const { constructPath } = require('../Helpers')
+const { constructPath, cleanString } = require('../Helpers')
 const request = require('request')
 const fs = require('fs')
 const { formatNumber } = require('../Helpers')
@@ -106,9 +106,9 @@ exports.getChapter = async (chapter, manga = {}) => {
 
     // Preparar el guardado de imágenes
     if (has(manga, 'title')) {
-        pathToSaveMangas += `/${slug(manga.title)}`
+        pathToSaveMangas += `/${cleanString(manga.title)}`
     }
-    pathToSaveMangas += has(chapter, 'chapter') ? `/${chapter.chapter}` : '/new'
+    pathToSaveMangas += has(chapter, 'chapter') ? `/${cleanString(chapter.chapter)}` : '/new'
 
     console.log(`Buscando el episodio con la URL: ${url}`.bgBlue.white)
 

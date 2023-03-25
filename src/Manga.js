@@ -79,7 +79,7 @@ exports.showManga = async (manga) => {
         if (isArray(chapter.url) && size(chapter.url) === 1) {
             chapter.url = chapter.url[0].url
         }
-        else {
+        else if (isArray(chapter.url)) {
             const { scan } = await prompt([
                 {
                     type: 'list',

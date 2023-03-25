@@ -1,6 +1,6 @@
 // Va a controlar el almacenamiento de información en la base de datos
 const fs = require('fs')
-const { find, each } = require('lodash')
+const { find, each, isArray } = require('lodash')
 const crypto = require('crypto')
 const { map, defaults } = require('lodash')
 const config = require('./DefaultConfig')
@@ -37,7 +37,7 @@ exports.setData = (url, data) => {
     fs.writeFileSync(config.databasePath, JSON.stringify(database))
 }
 
-exports.updateChapter = (mangaId, chapter, previousUrl, newUrl) => {
+exports.updateURLChapter = (mangaId, chapter, previousUrl, newUrl) => {
     console.log('\nDatabase Updating\n'.yellow)
 
     const database = this.getData()
@@ -48,12 +48,16 @@ exports.updateChapter = (mangaId, chapter, previousUrl, newUrl) => {
             ...manga,
             chapters: map(manga.chapters, (chp) => {
                 if (chp.chapter === chapter && mangaId === manga.id) {
-                    chp.options = map(chp.options, (opt) => {
-                        if (opt.url === previousUrl) {
-                            opt.url = newUrl
-                        }
-                        return opt
-                    })
+                    if (isArray(chp.url)) {
+                        chp.url = map(chp.url, (opt) => {
+                            if (opt.url === previousUrl) {
+                                opt.url = newUrl
+                            }
+                            return opt
+                        })
+                    } else {
+                        chp.url = newUrl
+                    }
                 }
 
                 return chp

@@ -2,10 +2,10 @@ const puppeteer = require('puppeteer-extra')
 const cheerio = require('cheerio')
 const stealth = require('puppeteer-extra-plugin-stealth')
 const slug = require('slug')
-const { findData, setData } = require('../DatabaseController')
+const { setData, updateURLChapter: updateChapter } = require('../DatabaseController')
 const { isEmpty } = require('lodash')
 const config = require('../DefaultConfig')
-const { constructPath, formatNumber } = require('../Helpers')
+const { constructPath, formatNumber, cleanString } = require('../Helpers')
 const { replace, isObject, has } = require('lodash')
 const fs = require('fs')
 
@@ -43,8 +43,8 @@ exports.getManga = async (url) => {
     manga.genders = []
     manga.chapters = []
 
-    console.log(`\nManga encontrado:`.green, manga.title.cyan, '\n')
-    console.log('Extrayendo información...'.cyan)
+    console.log(`\nManga encontrado:`.green, manga.title.cyan)
+    console.log('\nExtrayendo información...'.cyan)
 
     // Obtener los géneros
     $('.element-header-content h6').each((index, el) => {
@@ -106,7 +106,7 @@ exports.getManga = async (url) => {
  * @returns void
  */
 exports.getChapter = async (chapter, manga = {}) => {
-    const url = replace(chapter.url, 'paginated', 'cascade')
+    let url = replace(chapter.url, 'paginated', 'cascade')
     let pathToSaveMangas = constructPath(config.mangasFolder, config.pages.tuMangaOnline.folderSaved)
     const method = config.pages.tuMangaOnline.saveMethod
     const testFile = [
@@ -116,9 +116,9 @@ exports.getChapter = async (chapter, manga = {}) => {
 
     // Preparar el guardado de imágenes
     if (has(manga, 'title')) {
-        pathToSaveMangas += `/${slug(manga.title)}`
+        pathToSaveMangas += `/${cleanString(manga.title)}`
     }
-    pathToSaveMangas += has(chapter, 'chapter') ? `/${chapter.chapter}` : '/new'
+    pathToSaveMangas += has(chapter, 'chapter') ? `/${cleanString(chapter.chapter)}` : '/new'
 
     fs.mkdirSync(pathToSaveMangas, { recursive: true })
 
