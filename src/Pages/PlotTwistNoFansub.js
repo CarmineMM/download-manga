@@ -96,6 +96,7 @@ const insertCodeInPlotTwistPage = async (page) => {
  */
 exports.getChapter = async (chapter, manga = {}) => {
     const url = chapter.url.trim()
+
     let pathToSaveMangas = constructPath(config.mangasFolder, config.pages.plotTwistNoFansub.folderSaved)
 
     const testFile = [
@@ -149,7 +150,8 @@ exports.getChapter = async (chapter, manga = {}) => {
         request(getImageUrl).pipe(
             fs.createWriteStream(imgSaveTo)
         )
-        console.log(`Imagen guardada en: ${imgSaveTo.yellow}\n`);
+        console.log(`Imagen guardada en: ${imgSaveTo.yellow}\n`)
+        await new Promise((resolve) => setTimeout(resolve, 500))
     }
 
     // Cerrar el navegador

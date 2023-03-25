@@ -3,7 +3,7 @@ const { getManga, getChapter } = require('./src/Scraper')
 const { menu, pause, getAllChapters } = require('./src/inquirer')
 const { inputUrlToManga, listMangas, showManga, inputUrlToChapter } = require('./src/Manga')
 const inquirer = require('inquirer')
-const { map } = require('lodash')
+const { map, isEmpty } = require('lodash')
 const fs = require('fs')
 const { removeDatabase, removeMangaFolder } = require('./src/FilesController')
 const config = require('./src/DefaultConfig')
@@ -15,7 +15,6 @@ const main = async () => {
 
     do {
         answer = await menu()
-        let chapterUrl = ''
         let manga = ''
         let chapterInfo = {}
 
@@ -24,8 +23,7 @@ const main = async () => {
             manga = await listMangas()
 
             if (manga !== '0') {
-                let { reOpt, chapterUrl: getUrl, chapter } = await showManga(manga)
-                chapterUrl = getUrl
+                let { reOpt, chapter } = await showManga(manga)
                 answer = reOpt
                 chapterInfo = chapter
             }
@@ -37,8 +35,7 @@ const main = async () => {
             manga = await getManga(url)
 
             if (manga) {
-                const { reOpt, chapterUrl: getUrl, chapter } = await showManga(manga)
-                chapterUrl = getUrl
+                const { reOpt, chapter } = await showManga(manga)
                 answer = reOpt
                 chapterInfo = chapter
             }
@@ -46,12 +43,11 @@ const main = async () => {
 
         // Obtener un capitulo
         if (answer === '3' && chapterInfo !== 'all') {
-            if (chapterUrl === '') {
-                const url = await inputUrlToChapter()
-                chapterUrl = url
+            if (isEmpty(chapterInfo)) {
+                chapterInfo = await inputUrlToChapter()
             }
 
-            await getChapter(chapterUrl, manga, chapterInfo)
+            await getChapter(chapterInfo, manga)
         }
 
         if (answer === '4') {

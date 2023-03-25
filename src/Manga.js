@@ -42,7 +42,6 @@ exports.listMangas = async () => {
 exports.showManga = async (manga) => {
     const prompt = inquirer.createPromptModule()
     let reOpt = '---'
-    let chapterUrl = ''
 
     console.log(`\n${'Titulo:'.cyan}\n${manga.title.yellow}\n`)
     // console.log(`${'También buscado como:'.cyan}\n${manga.subtitle}\n`)
@@ -66,7 +65,7 @@ exports.showManga = async (manga) => {
         })
     })
 
-    const { chapter } = await prompt([
+    let { chapter } = await prompt([
         {
             type: 'list',
             message: '¿Desea descargar algún episodio?',
@@ -81,18 +80,17 @@ exports.showManga = async (manga) => {
                 {
                     type: 'list',
                     message: `Seleccione uno de los scan para descargar el episodio: ${chapter.chapter.cyan}`,
-                    name: 'chapterUrl',
+                    name: 'scan',
                     choices: map(chapter.options, (opt) => ({
                         value: opt.url,
                         name: opt.scan
                     }))
                 }
             ])
-            chapterUrl = scan
-        }
-        // Capitulo solo sin URL
-        else {
-            chapterUrl = isArray(chapter.options) ? chapter.options[0] : chapter.options
+            chapter = {
+                url: scan.value,
+                chapter: chapter.chapter
+            }
         }
 
         reOpt = '3'
@@ -100,7 +98,6 @@ exports.showManga = async (manga) => {
 
     return {
         reOpt,
-        chapterUrl,
         chapter
     }
 }
