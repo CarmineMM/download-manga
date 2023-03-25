@@ -7,7 +7,7 @@ module.exports = {
         tuMangaOnline: {
             title: 'TU MANGA ONLINE',
             saveMethod: 'screenshot',
-            folderSaved: 'tmo',
+            folderSaved: '',
             linksKnown: [
                 'https://lectortmo.com',
                 'https://animalslegacy.com',
@@ -17,7 +17,7 @@ module.exports = {
         plotTwistNoFansub: {
             title: 'Plot Twist No Fansub',
             saveMethod: false,
-            folderSaved: 'plot',
+            folderSaved: '',
             linksKnown: [
                 'https://www.plot-twistnf-scans.com',
             ],

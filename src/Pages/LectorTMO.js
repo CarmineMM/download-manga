@@ -37,9 +37,9 @@ exports.getManga = async (url) => {
     const $ = cheerio.load(html)
 
     // Obtener el titulo, subtitulo y descripción del manga
-    manga.title = $('h1.element-title').text().replace('\n', ' ').trim()
-    manga.subtitle = $('h2.element-subtitle').text().replace('\n', ' ').trim()
-    manga.description = $('p.element-description').text().replace('\n', ' ').trim()
+    manga.title = cleanString($('h1.element-title').text())
+    manga.subtitle = cleanString($('h2.element-subtitle').text())
+    manga.description = cleanString($('p.element-description').text())
     manga.genders = []
     manga.chapters = []
 
