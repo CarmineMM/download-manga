@@ -35,3 +35,6 @@ exports.checkUrl = (url, pages) => {
         (page) => url.toLowerCase().includes(page.toLowerCase())
     )
 }
+
+
+exports.formatNumber = (number) => number < 10 ? `0${number}` : number

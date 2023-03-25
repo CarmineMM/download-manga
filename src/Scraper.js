@@ -4,7 +4,7 @@
 // Importar las librerías necesarias
 require('colors')
 const { setData, findData, updateChapter, mangasFolder } = require('./DatabaseController')
-const { has, isEmpty, isObject, replace, each, find } = require('lodash')
+const { has, isEmpty, isObject, replace, each, find, isString } = require('lodash')
 const fs = require('fs')
 const slug = require('slug')
 const path = require('path')
@@ -50,111 +50,34 @@ exports.getManga = async (url) => {
 }
 
 /**
- * Obtener/Descargar un capitulo de manga
+ * Descargar las imágenes del capitulo
  * 
- * @param {string} url 
- * @param {string} manga 
- * @param {object} chapter 
+ * @param {object|string} chapter Capitulo o URL del capitulo para descargar
+ * @param {object} manga Manga guardado en la base de datos, el cual se va usar para actualizarse
+ * @returns void
  */
-exports.getChapter = async (url, manga = '', chapter = {}) => {
+exports.getChapter = async (chapter = {}, manga = false) => {
     console.clear()
     console.log('Comprobando URL'.cyan)
-    url = replace(url, 'paginated', 'cascade')
-    let pathToSaveMangas = mangasFolder
-    const method = 'screenshot'
-    const testFile = [
-        'test.txt',
-        `DESCARGANDO DE URL: ${url}`
-    ]
 
-    // Preparar el guardado de imágenes
-    if (isObject(manga)) {
-        pathToSaveMangas += `/${slug(manga.title)}`
-    }
-    pathToSaveMangas += has(chapter, 'chapter') ? `/${chapter.chapter}` : '/new'
+    chapter = isString(chapter) ? { url: chapter.toLocaleLowerCase() } : chapter
 
-    fs.mkdirSync(pathToSaveMangas, { recursive: true })
+    // Explorar para saber que controlador usar
+    const page = find(
+        config.pages,
+        (page) => find(page.linksKnown, (link) => chapter.url.includes(link.toLowerCase()))
+    )
 
-    // Crear archivo de prueba
-    fs.writeFileSync(`${pathToSaveMangas}/${testFile[0]}`, testFile[1], { encoding: 'utf8' })
-
-    const listImages = []
-
-    const browser = await puppeteer.launch({
-        headless: false,
-        args: [
-            `--no-sandbox`,
-            `--disable-setuid-sandbox`,
-        ],
-    })
-    const page = await browser.newPage()
-
-    page.setDefaultNavigationTimeout(1000 * 60 * 20)
-    const client = await page.target().createCDPSession();
-    const pathResolve = path.resolve(pathToSaveMangas)
-
-    await client.send('Page.setDownloadBehavior', {
-        behavior: 'allow',
-        downloadPath: pathResolve,
-    });
-
-    // Navegar a la URL
-    do {
-        console.log(`Buscando el episodio con la URL: ${url}`.bgBlue.white)
-        await page.goto(url)
-
-        // Actualizar la URL en caso de ser de re-direcciones
-        if (!isEmpty(chapter) && !isEmpty(manga) && !url.includes('cascade')) {
-            updateChapter(manga.id, chapter.chapter, url, page.url())
-        }
-
-        // Comprobar si la URL de la pagina cargada esta paginada o completa
-        if (page.url().includes('paginated')) {
-            console.log('\nCambiando a modo Cascada'.yellow)
-            url = replace(page.url(), 'paginated', 'cascade')
-        }
-    } while (page.url().includes('paginated'))
-
-    const html = await page.content()
-    const $ = cheerio.load(html)
-
-    console.log('Obteniendo imágenes'.cyan)
-
-    $('#main-container img').each(async (i, el) => {
-        listImages.push($(el).attr('data-src'))
-    })
-
-    for (let i = 0; i < listImages.length; i++) {
-        const img = `img-${formatNumber(i + 1)}.jpg`
-        const saveIn = pathToSaveMangas + '/' + img
-        const url = listImages[i]
-
-        console.log(`Obteniendo la imagen ${url}`)
-        if (method === 'screenshot') {
-            const element = await page.$(`img[data-src="${url}"]`)
-            await element.screenshot({ path: saveIn })
-        }
-        else {
-            const data = await page.evaluate(saveMethods, { url, img, method, saveIn })
-            if (method === 'fetch') {
-                data
-                    ? fs.writeFileSync(saveIn, data, 'base64')
-                    : console.log('No se pudo cargar la imagen'.bgRed.cyan)
-            }
-        }
-
-        console.log(`Descargando en ${(saveIn).cyan}\n`)
-
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+    // Comprobar existencia y disponibilidad del controlador
+    if (isEmpty(page) || !has(page, 'controller')) {
+        console.log('No se encontró un controlador para este sitio web'.bgRed.white)
+        await pause()
+        return false
     }
 
-    // Cerrar el navegador
-    await browser.close()
+    const mangaController = require(`./Pages/${page.controller}`)
 
-    // Eliminar archivo de prueba
-    fs.rmSync(`${pathToSaveMangas}/${testFile[0]}`)
+    const gettingManga = await mangaController.getChapter(chapter, manga)
 
-    console.log('Capítulo descargado!'.cyan)
 }
 
-const formatNumber = (number) => number < 10 ? `0${number}` : number

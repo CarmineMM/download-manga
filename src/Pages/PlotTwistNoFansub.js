@@ -10,6 +10,12 @@ const { constructPath } = require('../Helpers')
 
 puppeteer.use(stealth())
 
+/**
+ * Obtiene la información del manga junto con el listado de capítulos
+ * 
+ * @param {string} url 
+ * @returns 
+ */
 exports.getManga = async (url) => {
     // Objeto con el capitulo 
     const manga = {}
@@ -49,8 +55,8 @@ exports.getManga = async (url) => {
 
     // Guardar en la base de datos la información recolectada
     setData(url, {
+        from: 'plotTwistNoFansub',
         ...manga,
-        from: 'plotTwistNoFansub'
     })
 
     console.log('Fin de la ejecución'.bgGreen.black)
@@ -58,14 +64,33 @@ exports.getManga = async (url) => {
     return manga
 }
 
+/**
+ * Ejecuta un script dentro de la pagina para obtener el listado de episodios
+ * 
+ * @param {object} page 
+ * @returns page
+ */
 const insertCodeInPlotTwistPage = async (page) => {
     document.addEventListener('DOMContentLoaded', () => {
         page.chapters = window.obj.chapters.map(chapter => ({
             downloadLink: chapter.chapter_downloadlink,
             chapter: `Capítulo ${chapter.chapter_number}: ${chapter.chapter_name}`.trim(),
             options: `${window.obj.site_url}/${window.obj.read}/${window.obj.title}/chapter-${chapter.chapter_number}`,
+            downloadConfirm: false,
         }))
     })
     await new Promise((resolve) => setTimeout(resolve, 5000))
     return page
+}
+
+
+/**
+ * Descargar las imágenes del capitulo
+ * 
+ * @param {object|string} chapter Capitulo o URL del capitulo para descargar
+ * @param {object} manga Manga guardado en la base de datos, el cual se va usar para actualizarse
+ * @returns void
+ */
+exports.getChapter = async (chapter, manga = {}) => {
+    await pause('Dscargando capitulo')
 }
