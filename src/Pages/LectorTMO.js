@@ -1,13 +1,13 @@
 const puppeteer = require('puppeteer-extra')
 const cheerio = require('cheerio')
 const stealth = require('puppeteer-extra-plugin-stealth')
-const slug = require('slug')
 const { setData, updateURLChapter: updateChapter } = require('../DatabaseController')
 const { isEmpty } = require('lodash')
 const config = require('../DefaultConfig')
 const { constructPath, formatNumber, cleanString } = require('../Helpers')
-const { replace, isObject, has } = require('lodash')
+const { replace, has } = require('lodash')
 const fs = require('fs')
+const { pause } = require('../inquirer')
 
 puppeteer.use(stealth())
 
@@ -67,7 +67,7 @@ exports.getManga = async (url) => {
         }).toArray()
 
         manga.chapters.push({
-            chapter: item.find('h4 a').text().replace('Capítulo', '').trim(),
+            chapter: item.find('h4 a').text().trim(),
             url: options
         })
     })
@@ -147,7 +147,16 @@ exports.getChapter = async (chapter, manga = {}) => {
     // Navegar a la URL
     do {
         console.log(`Buscando el episodio con la URL: ${url}`.bgBlue.white)
-        await page.goto(url)
+
+        try {
+            await page.goto(url)
+        } catch (error) {
+            console.log('Falla al ir al sitio web'.bgRed.white)
+            console.log(error)
+            await browser.close()
+            await pause()
+            return
+        }
 
         // Actualizar la URL en caso de ser de re-direcciones
         if (!isEmpty(chapter) && !isEmpty(manga) && !url.includes('cascade')) {
