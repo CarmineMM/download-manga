@@ -50,4 +50,4 @@ exports.formatNumber = (number) => number < 10 ? `0${number}` : number
  * @param {string} str 
  * @returns {string}
  */
-exports.cleanString = (str) => str.replace(/[^a-zA-Z0-9ñÑáéíóúÁÉÍÓÚüÜ\s]/g, ' ').trim()
+exports.cleanString = (str) => str.replace('\n', '').replace(/[^a-zA-Z0-9ñÑáéíóúÁÉÍÓÚüÜ\s]/g, ' ').trim()
