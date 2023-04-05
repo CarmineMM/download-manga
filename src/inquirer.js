@@ -1,11 +1,13 @@
 const inquirer = require('inquirer');
 
-
+/**
+ * Preguntas iniciales del sistema
+ */
 const questions = [
     {
         type: 'list',
         name: 'answer',
-        message: 'El scraper puede buscar y descargar Mangas o capítulos de LectorTMO (https://lectortmo.com/)',
+        message: 'El scraper puede buscar y descargar Mangas o capítulos de sitios como LectorTMO (https://lectortmo.com/) y Plot Twist No Fansub (https://www.plot-twistnf-scans.com/)',
         loop: false,
         choices: [
             {
@@ -40,6 +42,11 @@ const questions = [
     },
 ];
 
+/**
+ * Menu principal del sistema
+ * 
+ * @returns {string} answer
+ */
 exports.menu = async () => {
     console.clear()
     console.log('====================================='.green)
@@ -53,6 +60,11 @@ exports.menu = async () => {
     return answer
 }
 
+/**
+ * Función simple para pausar la ejecución
+ * 
+ * @param {string} message 
+ */
 exports.pause = async (message = 'Presione enter para continuar.') => {
     const prompt = inquirer.createPromptModule()
 
@@ -65,6 +77,12 @@ exports.pause = async (message = 'Presione enter para continuar.') => {
     ]);
 }
 
+/**
+ * Pregunta rápida para el usuario, seleccionable entre si o no
+ * 
+ * @param {string} message 
+ * @returns {string} answer
+ */
 exports.question = async (message) => {
     const prompt = inquirer.createPromptModule()
 
@@ -89,6 +107,11 @@ exports.question = async (message) => {
     return answer
 }
 
+/**
+ * Obtiene todos los capítulos de un manga, pero pregunta al usuario la priorización de scans
+ * TODO: En construcción
+ * @param {object} manga 
+ */
 exports.getAllChapters = async (manga) => {
     const prompt = inquirer.createPromptModule()
     console.log('Obteniendo la lista de scan'.cyan)

@@ -39,9 +39,13 @@ exports.getManga = async (url) => {
     // Cargar el HTML con Cheerio
     const $ = cheerio.load(html)
 
-    manga.title = $('h1.entry-title .htilestiloso').text().replace('\n', ' ').trim()
+    manga.title = cleanString($('h1.entry-title .htilestiloso').text())
     manga.subtitle = manga.title
-    manga.description = $('.td-post-content > p').first().text().replace('\n', ' ').trim()
+    const firstP = $('.td-post-content > p').first()
+    firstP.find('img').remove()
+    firstP.find('p').remove()
+    firstP.find('h4').remove()
+    manga.description = cleanString(firstP.text())
 
     console.log(`\nManga encontrado:`.green, manga.title.cyan, '\n')
     console.log('Extrayendo información...'.cyan)

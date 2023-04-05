@@ -93,7 +93,7 @@ exports.showManga = async (manga) => {
             ])
 
             chapter = {
-                url: scan.value,
+                url: scan,
                 chapter: chapter.chapter
             }
         }
