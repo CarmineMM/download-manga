@@ -37,7 +37,11 @@ exports.getManga = async (url) => {
     const $ = cheerio.load(html)
 
     // Obtener el titulo, subtitulo y descripción del manga
-    manga.title = cleanString($('h1.element-title').text())
+    const titleH1 = $('h1.element-title')
+    const getSpanInTitle = titleH1.find('span').text()
+    titleH1.find('span').remove()
+
+    manga.title = cleanString(titleH1.text().trim() + ' ' + getSpanInTitle)
     manga.subtitle = cleanString($('h2.element-subtitle').text())
     manga.description = cleanString($('p.element-description').text())
     manga.genders = []
@@ -152,9 +156,9 @@ exports.getChapter = async (chapter, manga = {}) => {
             await page.goto(url)
         } catch (error) {
             console.log('Falla al ir al sitio web'.bgRed.white)
+            console.log(`URL: ${url}`.bgRed.white);
             console.log(error)
             await browser.close()
-            await pause()
             return
         }
 
